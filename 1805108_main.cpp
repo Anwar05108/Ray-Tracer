@@ -2,6 +2,7 @@
 #include <GL/glut.h> // GLUT, include glu.h and gl.h
 #include <bits/stdc++.h>
 #include "1805108_classes.hpp"
+#include "bitmap_image.hpp"
 
 int WINDOW_WIDTH = 600;
 int WINDOW_HEIGHT = 600;
@@ -56,10 +57,11 @@ void initGL()
 // GLfloat upx = 0, upy = 1, upz = 0;
 // GLfloat rightx = 1, righty = 0, rightz = 0;
 // Global variables
-struct point pos; // position of the eye
-struct point l;   // look/forward direction
-struct point r;   // right direction
-struct point u;   // up direction
+// struct point pos; // position of the eye
+// struct point l;   // look/forward direction
+// struct point r;   // right direction
+// struct point u;   // up direction
+Vector pos, l, r, u;
 bool isAxes = true;
 
 /* Draw axes: X in Red, Y in Green and Z in Blue */
@@ -82,6 +84,71 @@ void drawAxes()
     glVertex3f(0, 0, 500);
     glVertex3f(0, 0, -500);
     glEnd();
+}
+
+void capture()
+{
+    cout << "Hello capture" << endl;
+    cout << "image_hieght" << image_height << endl;
+    image_width = image_height;
+    cout << "image_width" << image_width << endl;
+    bitmap_image image(image_height, image_width);
+    for (int i = 0; i < image_height; i++)
+    {
+        for (int j = 0; j < image_width; j++)
+        {
+            image.set_pixel(i, j, 0, 0, 0);
+        }
+    }
+    double plane_distance = near_distance;
+    // double plane_distance = (WINDOW_HEIGHT / 2.0) / tan((fovy / 2.0) * (M_PI / 180.0));
+    double window_height = 2 * plane_distance * tan((fovy / 2.0) * (M_PI / 180.0));
+    double fovx = fovy * aspectRatio;
+    double window_width = 2 * plane_distance * tan((fovx / 2.0) * (M_PI / 180.0));
+
+    Vector top_left = pos + (l * plane_distance) - (r * (window_width / 2.0)) + (u * (window_height / 2.0));
+
+    double du = window_width / (image_width * 1.0);
+    double dv = window_height / (image_height * 1.0);
+
+    top_left = top_left + (r * (du / 2.0)) - (u * (dv / 2.0));
+
+    for (int i = 0; i < image_height; i++)
+    {
+        for (int j = 0; j < image_width; j++)
+        {
+            int nearest = -1;
+            double t_min = 1000000000000000000.0;
+            Vector corner = top_left + (r * (j * du)) - (u * (i * dv));
+            Vector direction = corner - pos;
+            direction.normalize();
+
+            Ray ray(pos, direction);
+
+            Color color;
+            for (int k = 0; k < objects.size(); k++)
+            {
+                double t = objects[k]->intersect(ray, color, 0);
+                if (t > 0 && t < t_min)
+                {
+                    t_min = t;
+                    nearest = k;
+                }
+            }
+
+            if (nearest != -1)
+            {
+                t_min = objects[nearest]->intersect(ray, color, 1);
+            }
+            color.normalize();
+            image.set_pixel(j, i, color.r * 255, color.g * 255, color.b * 255);
+        }
+    }
+
+    string file_name = "output.bmp";
+    image.save_image(file_name);
+    cout << "Hello capture ended" << endl;
+    image.clear();
 }
 
 void display()
@@ -151,10 +218,10 @@ void init()
     glMatrixMode(GL_PROJECTION);
 
     glLoadIdentity();
-// near_distance;
-// double far_distance;
-// double fovy;
-// double aspectRatio;
+    // near_distance;
+    // double far_distance;
+    // double fovy;
+    // double aspectRatio;
     gluPerspective(fovy, aspectRatio, near_distance, far_distance);
 }
 
@@ -276,6 +343,9 @@ void keyboardListener(unsigned char key, int x, int y)
     case 'a':
         // rotate the object in the clockwise direction about its own axis
 
+        break;
+    case '0':
+        capture();
         break;
     // Control exit
     case 27:     // ESC key
@@ -459,7 +529,7 @@ void takeInput()
             object->setShininess(shininess);
             objects.push_back(object);
 
-            object = new Triangle(bottom_left_far, bottom_left_near, top);  
+            object = new Triangle(bottom_left_far, bottom_left_near, top);
             object->setColor(color);
             object->setCoefficients(ambient, diffuse, specular, reflection);
             object->setShininess(shininess);
@@ -561,7 +631,7 @@ int main(int argc, char **argv)
     glutDisplayFunc(display); // Register display callback handler for window re-paint
 
     glutIdleFunc(animate); // Register display callback handler for window re-paint
-    glutReshapeFunc(reshapeListener);                         // Register callback handler for window re-shape
+    // glutReshapeFunc(reshapeListener);                         // Register callback handler for window re-shape
     glutKeyboardFunc(keyboardListener);  // Register callback handler for normal-key event
     glutSpecialFunc(specialKeyListener); // Register callback handler for special-key event
                                          // Our own OpenGL initialization
