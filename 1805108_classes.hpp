@@ -374,7 +374,6 @@ public:
                     t_min_orgininal = t;
                 }
             }
-            
 
             // when we are not in shadow region
             if (t_min < t_min_orgininal)
@@ -382,8 +381,8 @@ public:
                 Vector R = normal * (normal * lightDir) * 2 - lightDir;
                 R.normalize();
                 double scalingFactor = exp(-lightDistance * spotLights[i].fall_Off_Rate);
-                 lambert += max(normal * lightDir, 0.0)*scalingFactor;
-                 phong += max(pow(R * ray.dir, shininess), 0.0)*scalingFactor;
+                lambert += max(normal * lightDir, 0.0) * scalingFactor;
+                phong += max(pow(R * ray.dir, shininess), 0.0) * scalingFactor;
 
                 color = color + this->getColor(initial_Point) * (normalLights[i].color * lambert * this->diffuse);
                 color.normalize();
@@ -621,9 +620,44 @@ public:
         glPopMatrix();
     }
 
-    Color getColor(Vector &v)
+    // Color getColor(Vector &v)
+    // {
+    //     return this->color;
+    // }
+
+    double getT(Ray &ray)
     {
-        return this->color;
+        Vector origin = ray.start - reference_point;
+        double a = 1;
+        double b = (ray.dir * origin) * 2;
+        double c = (origin * origin) - radius * radius;
+        
+        double d = b * b - 4 * a * c;
+        if (d < 0)
+        {
+            return -1;
+        }
+
+        double t1 = (-b + sqrt(d)) / (2 * a);
+        double t2 = (-b - sqrt(d)) / (2 * a);
+
+        if (t1 < 0 && t2 < 0)
+        {
+            return -1;
+        }
+
+        if (t1 > 0)
+        {
+            return t1;
+        }
+
+        if (t2 > 0)
+        {
+            return t2;
+        }
+
+        return -1;
+
     }
 
     Vector getNormal(Vector &initialPoint)
