@@ -7,16 +7,22 @@
 using namespace std;
 
 class Point;
-// class Ray;
+class Ray;
 class Color;
 class Vector;
 class Object;
 class Floor;
+class Triangle;
 class Sphere;
+class NormalLight;
+class SpotLight;
+
 
 extern int recursion_level;
 
 extern vector<Object *> objects;
+extern vector<NormalLight> normalLights;
+extern vector<SpotLight> spotLights;
 
 class Point
 {
@@ -166,6 +172,76 @@ class Vector
 };
 
 
+class NormalLight{
+    public:
+    Vector position;
+    Color color;
+    double fall_Off_Rate;
+
+    NormalLight(){}
+
+    NormalLight(Vector position, Color color, double fall_Off_Rate){
+        this->position = position;
+        this->color = color;
+        this->fall_Off_Rate = fall_Off_Rate;
+    }
+
+    void setFallOffRate(double fall_Off_Rate){
+        this->fall_Off_Rate = fall_Off_Rate;
+    }
+};
+
+class SpotLight : public NormalLight{
+    public:
+    Vector direction;
+    double angle;
+    SpotLight(){}
+
+    SpotLight(Vector position, Vector direction, double angle, Color color, double fall_Off_Rate){
+        this->position = position;
+        this->direction = direction;
+        this->angle = angle;
+        this->color = color;
+        this->fall_Off_Rate = fall_Off_Rate;
+    }
+
+    void setFallOffRate(double fall_Off_Rate){
+        this->fall_Off_Rate = fall_Off_Rate;
+    }
+
+   void draw(){
+        glColor3d(color.r, color.g, color.b);
+        glPushMatrix();
+            glTranslated(position.x, position.y, position.z);
+            glutSolidSphere(0.5, 100, 100);
+        glPopMatrix();
+    }
+
+    
+    
+    
+};
+
+
+class Ray
+{
+    public:
+    Vector start, dir;
+
+    Ray() {}
+
+    Ray(Vector start, Vector dir){
+        this->start = start;
+        this->dir = dir;
+        this->dir.normalize();
+    }
+
+    Ray(const Ray &r){
+        start = r.start;
+        dir = r.dir;
+    }  
+}; 
+
 class Object
 {
 public:
@@ -233,6 +309,37 @@ class Floor : public Object
 
 };
 
+class Triangle : public Object{
+    public:
+    Vector a, b, c;
+
+    Triangle(){}
+    Triangle(Vector a, Vector b, Vector c){
+        this->a = a;
+        this->b = b;
+        this->c = c;
+    }
+
+    void draw(){
+        glColor3d(color.r, color.g, color.b);
+        glBegin(GL_TRIANGLES);
+            glVertex3f(a.x, a.y, a.z);
+            glVertex3f(b.x, b.y, b.z);
+            glVertex3f(c.x, c.y, c.z);
+        glEnd();
+    }
+
+    Vector getNormal(Vector &initialPoint){
+        Vector normal = (b - a) ^ (c - a);
+        normal.normalize();
+        return normal;
+    }
+
+    // Color getColor(Vector &v){
+    //     return this->color;
+    // }
+};
+
 
 class Sphere : public Object
 {
@@ -263,5 +370,6 @@ class Sphere : public Object
     }
 
 };
+
 
 #endif // _1805108_CLASSES_HPP_

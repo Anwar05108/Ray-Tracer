@@ -23,8 +23,8 @@ double reflection_coefficient_checkboard;
 int object_count;
 
 vector<Object *> objects;
-// Vector<PointLight> point_lights;
-// Vector<SpotLight> spot_lights;
+vector<SpotLight> spotLights;
+vector<NormalLight> normalLights;
 
 using namespace std;
 
@@ -84,33 +84,6 @@ void drawAxes()
     glEnd();
 }
 
-void drawCheckerBoard()
-{
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    for (int x = 0; x < WINDOW_WIDTH; x += CHECKER_SIZE)
-    {
-        for (int y = 0; y < WINDOW_HEIGHT; y += CHECKER_SIZE)
-        {
-            if (((int)(x / CHECKER_SIZE) + (int)(y / CHECKER_SIZE)) % 2 == 0)
-            {
-                glColor3f(1.0f, 1.0f, 1.0f); // White
-            }
-            else
-            {
-                glColor3f(0.0f, 0.0f, 0.0f); // Black
-            }
-
-            glBegin(GL_QUADS);
-            glVertex2f(x, y);
-            glVertex2f(x + CHECKER_SIZE, y);
-            glVertex2f(x + CHECKER_SIZE, y + CHECKER_SIZE);
-            glVertex2f(x, y + CHECKER_SIZE);
-            glEnd();
-        }
-    }
-}
-
 void display()
 {
     // glClear(GL_COLOR_BUFFER_BIT);            // Clear the color buffer (background)
@@ -154,18 +127,23 @@ void init()
 {
     glClearColor(0, 0, 0, 0);
 
-    pos.x = 200;
-    pos.y = 200;
-    pos.z = 5;
+    pos.x = 0;
+    pos.y = -100;
+    pos.z = 50;
 
-    l.x = -1 / sqrt(2);
-    l.y = -1 / sqrt(2);
+    // l.x = -1 / sqrt(2);
+    l.x = 0;
+    // l.y = -1 / sqrt(2);
+    l.y = 1;
     l.z = 0;
     u.x = 0;
     u.y = 0;
     u.z = 1;
-    r.x = -1 / sqrt(2);
-    r.y = 1 / sqrt(2);
+    // r.x = -1 / sqrt(2);
+    // r.y = 1 / sqrt(2);
+    // r.z = 0;
+    r.x = 1;
+    r.y = 0;
     r.z = 0;
 
     glClearColor(0, 0, 0, 0);
@@ -173,8 +151,11 @@ void init()
     glMatrixMode(GL_PROJECTION);
 
     glLoadIdentity();
-
-    gluPerspective(80, 1, 1, 1000.0);
+// near_distance;
+// double far_distance;
+// double fovy;
+// double aspectRatio;
+    gluPerspective(fovy, aspectRatio, near_distance, far_distance);
 }
 
 /* Handler for window re-size event. Called back when the window first appears and
@@ -200,7 +181,7 @@ void reshapeListener(GLsizei width, GLsizei height)
         gluOrtho2D(-1.0, 1.0, -1.0 / aspect, 1.0 / aspect);
     }*/
     // Enable perspective projection with fovy, aspect, zNear and zFar
-    gluPerspective(45.0f, aspect, 0.1f, 100.0f);
+    gluPerspective(fovy, aspectRatio, near_distance, far_distance);
 }
 
 /* Callback handler for normal-key event */
@@ -380,7 +361,7 @@ void takeInput()
 
     Object *object;
 
-    object = new Floor(800, 20);
+    object = new Floor(800, CHECKER_SIZE);
     object->setCoefficients(ambient_coefficient_checkboard, diffuse_coefficient_checkboard, 0, reflection_coefficient_checkboard);
     objects.push_back(object);
 
@@ -442,8 +423,8 @@ void takeInput()
         }
         else if (object_type == "pyramid")
         {
-            Point lowest_point_coordinate;
-            inputStream >> lowest_point_coordinate.x >> lowest_point_coordinate.y >> lowest_point_coordinate.z;
+            Vector lowest_point_coordinate;
+            inputStream >> lowest_point_coordinate;
             double width, height;
             inputStream >> width >> height;
             Color color;
@@ -452,7 +433,92 @@ void takeInput()
             inputStream >> ambient >> diffuse >> specular >> reflection;
             int shininess;
             inputStream >> shininess;
+            // calculate the 6 triangles needed to draw the pyramid
+            // 1. 2 bottom triangles
+            Vector bottom_left_near = lowest_point_coordinate;
+            Vector bottom_right_near = lowest_point_coordinate + Vector(width, 0, 0);
+            Vector bottom_left_far = lowest_point_coordinate + Vector(0, width, 0);
+            Vector bottom_right_far = lowest_point_coordinate + Vector(width, width, 0);
+            Vector top = lowest_point_coordinate + Vector(width / 2.0, width / 2.0, height);
+            // now we create 6 triangles
+            object = new Triangle(bottom_left_near, bottom_right_near, top);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_right_near, bottom_right_far, top);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_right_far, bottom_left_far, top);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_left_far, bottom_left_near, top);  
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_left_near, bottom_right_near, bottom_left_far);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_right_near, bottom_right_far, bottom_left_far);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
         }
+    }
+
+    int num_of_normal_light_sources;
+    inputStream >> num_of_normal_light_sources;
+
+    for (int i = 0; i < num_of_normal_light_sources; i++)
+    {
+        Vector light_source_coordinate;
+        inputStream >> light_source_coordinate;
+
+        Color color;
+        color = Color(1, 1, 1);
+
+        double fallOffRate;
+        inputStream >> fallOffRate;
+
+        NormalLight normal_light(light_source_coordinate, color, fallOffRate);
+        normalLights.push_back(normal_light);
+    }
+
+    int num_of_spot_light_sources;
+    inputStream >> num_of_spot_light_sources;
+    for (int i = 0; i < num_of_spot_light_sources; i++)
+    {
+        Vector light_source_coordinate;
+        inputStream >> light_source_coordinate;
+
+        Color color;
+        color = Color(1, 1, 1);
+
+        double fallOffRate;
+        inputStream >> fallOffRate;
+
+        Vector direction;
+        inputStream >> direction;
+
+        double cutOffAngle;
+        inputStream >> cutOffAngle;
+
+        SpotLight spot_light(light_source_coordinate, direction, cutOffAngle, color, fallOffRate);
+
+        spotLights.push_back(spot_light);
     }
 
     cout << "Hello input completed" << endl;
@@ -495,7 +561,7 @@ int main(int argc, char **argv)
     glutDisplayFunc(display); // Register display callback handler for window re-paint
 
     glutIdleFunc(animate); // Register display callback handler for window re-paint
-    // glutReshapeFunc(reshapeListener);                         // Register callback handler for window re-shape
+    glutReshapeFunc(reshapeListener);                         // Register callback handler for window re-shape
     glutKeyboardFunc(keyboardListener);  // Register callback handler for normal-key event
     glutSpecialFunc(specialKeyListener); // Register callback handler for special-key event
                                          // Our own OpenGL initialization
