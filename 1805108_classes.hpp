@@ -167,6 +167,10 @@ public:
         is >> v.x >> v.y >> v.z;
         return is;
     }
+    double distance(Vector &v)
+    {
+        return sqrt((x - v.x) * (x - v.x) + (y - v.y) * (y - v.y) + (z - v.z) * (z - v.z));
+    }
 };
 
 class NormalLight
@@ -291,15 +295,15 @@ public:
         normal.normalize();
 
         // illumination and casting
-
+        double lambert = 0.0, phong = 0.0;
         for (int i = 0; i < normalLights.size(); i++)
         {
             Vector lightDir = normalLights[i].position - initial_Point;
-            double lightDistance = lightDir * lightDir;
+            double lightDistance = normalLights[i].position.distance(initial_Point);
             lightDir.normalize();
 
             Vector lightPosition;
-            lightPosition = initial_Point + lightDir * 0.001;
+            lightPosition = initial_Point + lightDir * 0.00000001;
 
             Ray lightRay(lightPosition, lightDir);
 
@@ -320,9 +324,9 @@ public:
             {
                 Vector R = normal * (normal * lightDir) * 2 - lightDir;
                 R.normalize();
-
-                double lambert = max(normal * lightDir, 0.0);
-                double phong = max(pow(R * ray.dir, shininess), 0.0);
+                double scalingFactor = exp(-lightDistance * lightDistance * normalLights[i].fall_Off_Rate);
+                lambert += max(normal * lightDir, 0.0) * scalingFactor;
+                phong += max(pow(R * ray.dir, shininess), 0.0) * scalingFactor;
 
                 color = color + this->getColor(initial_Point) * (normalLights[i].color * lambert * this->diffuse);
                 color.normalize();
@@ -351,7 +355,7 @@ public:
 
             // same as normal light
             lightDir = spotLights[i].position - initial_Point;
-            lightDistance = lightDir * lightDir;
+            lightDistance = spotLights[i].position.distance(initial_Point);
             lightDir.normalize();
 
             Vector lightPosition;
@@ -370,15 +374,16 @@ public:
                     t_min_orgininal = t;
                 }
             }
+            
 
             // when we are not in shadow region
             if (t_min < t_min_orgininal)
             {
                 Vector R = normal * (normal * lightDir) * 2 - lightDir;
                 R.normalize();
-
-                double lambert = max(normal * lightDir, 0.0);
-                double phong = max(pow(R * ray.dir, shininess), 0.0);
+                double scalingFactor = exp(-lightDistance * spotLights[i].fall_Off_Rate);
+                 lambert += max(normal * lightDir, 0.0)*scalingFactor;
+                 phong += max(pow(R * ray.dir, shininess), 0.0)*scalingFactor;
 
                 color = color + this->getColor(initial_Point) * (normalLights[i].color * lambert * this->diffuse);
                 color.normalize();
@@ -507,15 +512,17 @@ public:
     {
         int x = (v.x - reference_point.x) / tileWidth;
         int y = (v.y - reference_point.y) / tileWidth;
-
-        if ((x + y) % 2 == 0)
-        {
-            return Color(0, 0, 0);
-        }
-        else
-        {
-            return Color(255, 255, 255);
-        }
+        int c = (x + y) % 2;
+        return Color(c, c, c);
+        // return Color(0, 0, 0);
+        // if ((x + y) % 2 == 0)
+        // {
+        //     return Color(0, 0, 0);
+        // }
+        // else
+        // {
+        //     return Color(255, 255, 255);
+        // }
     }
 };
 
