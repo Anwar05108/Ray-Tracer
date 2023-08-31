@@ -615,8 +615,8 @@ public:
     {
         glColor3d(color.r, color.g, color.b);
         glPushMatrix();
-        glTranslated(reference_point.x, reference_point.y, reference_point.z);
-        glutSolidSphere(radius, 100, 100);
+            glTranslated(reference_point.x, reference_point.y, reference_point.z);
+            glutSolidSphere(radius, 100, 100);
         glPopMatrix();
     }
 
@@ -660,7 +660,7 @@ public:
 
     }
 
-    Vector getNormal(Vector &initialPoint)
+    Vector getNormal(Vector &initialPoint) override
     {
         Vector normal = initialPoint - reference_point;
         normal.normalize();

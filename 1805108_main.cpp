@@ -454,8 +454,8 @@ void takeInput()
         cout << object_type << endl;
         if (object_type == "cube")
         {
-            Point bottom_lower_left_corner;
-            inputStream >> bottom_lower_left_corner.x >> bottom_lower_left_corner.y >> bottom_lower_left_corner.z;
+            Vector bottom_lower_left_corner;
+            inputStream >> bottom_lower_left_corner;
             double side;
             inputStream >> side;
             Color color;
@@ -464,8 +464,96 @@ void takeInput()
             inputStream >> ambient >> diffuse >> specular >> reflection;
             int shininess;
             inputStream >> shininess;
+            // contruct 12 triangles to construct cube
+            // find the 8 vertices
+            Vector bottom_lower_right_corner = bottom_lower_left_corner + Vector(side, 0, 0);
+            Vector bottom_upper_left_corner = bottom_lower_left_corner + Vector(0, side, 0);
+            Vector bottom_upper_right_corner = bottom_lower_left_corner + Vector(side, side, 0);
+            Vector top_lower_left_corner = bottom_lower_left_corner + Vector(0, 0, side);
+            Vector top_lower_right_corner = bottom_lower_left_corner + Vector(side, 0, side);
+            Vector top_upper_left_corner = bottom_lower_left_corner + Vector(0, side, side);
+            Vector top_upper_right_corner = bottom_lower_left_corner + Vector(side, side, side);
+
+            // now we create 12 triangles
+            object = new Triangle(bottom_lower_left_corner, bottom_lower_right_corner, bottom_upper_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_lower_left_corner, bottom_upper_left_corner, bottom_upper_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_lower_left_corner, bottom_lower_right_corner, top_lower_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_lower_left_corner, top_lower_left_corner, top_lower_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_lower_left_corner, bottom_upper_left_corner, top_upper_left_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_lower_left_corner, top_lower_left_corner, top_upper_left_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_lower_right_corner, bottom_upper_right_corner, top_lower_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_lower_right_corner, top_lower_right_corner, top_upper_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_upper_left_corner, bottom_upper_right_corner, top_upper_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(bottom_upper_left_corner, top_upper_left_corner, top_upper_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(top_lower_left_corner, top_lower_right_corner, top_upper_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+            objects.push_back(object);
+
+            object = new Triangle(top_lower_left_corner, top_upper_left_corner, top_upper_right_corner);
+            object->setColor(color);
+            object->setCoefficients(ambient, diffuse, specular, reflection);
+            object->setShininess(shininess);
+
+            objects.push_back(object);
+
+
         }
-        else if (object_type == "sphere")
+        
+        
+        
+         if (object_type == "sphere")
         {
             cout << "inside sphere" << endl;
             Vector centre;
