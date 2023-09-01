@@ -512,16 +512,16 @@ public:
         int x = (v.x - reference_point.x) / tileWidth;
         int y = (v.y - reference_point.y) / tileWidth;
         int c = (x + y) % 2;
-        return Color(c, c, c);
+        // return Color(c, c, c);
         // return Color(0, 0, 0);
-        // if ((x + y) % 2 == 0)
-        // {
-        //     return Color(0, 0, 0);
-        // }
-        // else
-        // {
-        //     return Color(255, 255, 255);
-        // }
+        if ((x + y) % 2 == 0)
+        {
+            return Color(0, 0, 0);
+        }
+        else
+        {
+            return Color(0.8, 0.8, 0.8);
+        }
     }
 };
 
@@ -646,14 +646,18 @@ public:
             return -1;
         }
 
-        if (t1 > 0)
+        if (t1 < 0)
+        {
+            return t2;
+        }
+
+        if (t2 < 0)
         {
             return t1;
         }
-
-        if (t2 > 0)
+        else
         {
-            return t2;
+            return min(t1, t2);
         }
 
         return -1;

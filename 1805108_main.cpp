@@ -145,7 +145,7 @@ void capture()
         }
     }
 
-    string file_name = "output.bmp";
+    string file_name = "output_1.bmp";
     image.save_image(file_name);
     cout << "Hello capture ended" << endl;
     image.clear();
@@ -431,7 +431,7 @@ void takeInput()
 
     Object *object;
 
-    object = new Floor(800, CHECKER_SIZE);
+    object = new Floor(8000, CHECKER_SIZE);
     object->setCoefficients(ambient_coefficient_checkboard, diffuse_coefficient_checkboard, 0, reflection_coefficient_checkboard);
     objects.push_back(object);
 
