@@ -294,6 +294,8 @@ public:
         Vector normal = this->getNormal(initial_Point);
         normal.normalize();
 
+        // cout << "normal size: " << normalLights.size() << endl;
+
         // illumination and casting
         double lambert = 0.0, phong = 0.0;
         for (int i = 0; i < normalLights.size(); i++)
@@ -303,7 +305,7 @@ public:
             lightDir.normalize();
 
             Vector lightPosition;
-            lightPosition = initial_Point + lightDir * 0.00000001;
+            lightPosition = initial_Point + lightDir * 0.0001;
 
             Ray lightRay(lightPosition, lightDir);
 
@@ -340,15 +342,15 @@ public:
         for (int i = 0; i < spotLights.size(); i++)
         {
             Vector lightDir = spotLights[i].direction;
-            double lightDistance = lightDir * lightDir;
-            lightDir.normalize();
+            double lightDistance;
+            // lightDir.normalize();
 
             Vector light_to_intersect = initial_Point - spotLights[i].position;
             light_to_intersect.normalize();
 
-            double angle = acos(light_to_intersect * spotLights[i].direction) * 180 / acos(-1);
+            double angle = acos(light_to_intersect * spotLights[i].direction) * 180 / M_PI;
 
-            if (angle > spotLights[i].angle)
+            if (fabs(angle) > spotLights[i].angle)
             {
                 continue;
             }
@@ -363,7 +365,7 @@ public:
 
             Ray lightRay(lightPosition, lightDir);
 
-            bool isShadow = false;
+            // bool isShadow = false;
             Color tempColor;
             double t, t_min_orgininal = 1000000000;
             for (int j = 0; j < objects.size(); j++)
@@ -461,6 +463,7 @@ public:
 
         for (int i = 0; i < num_grid; i++)
         {
+            glBegin(GL_QUADS);
             for (int j = 0; j < num_grid; j++)
             {
                 if ((i + j) % 2 == 0)
@@ -471,34 +474,45 @@ public:
                 {
                     glColor3d(255, 255, 255);
                 }
-                glBegin(GL_QUADS);
+
                 glVertex3f(reference_point.x + j * tileWidth, reference_point.y + i * tileWidth, reference_point.z);
                 glVertex3f(reference_point.x + (j + 1) * tileWidth, reference_point.y + i * tileWidth, reference_point.z);
                 glVertex3f(reference_point.x + (j + 1) * tileWidth, reference_point.y + (i + 1) * tileWidth, reference_point.z);
                 glVertex3f(reference_point.x + j * tileWidth, reference_point.y + (i + 1) * tileWidth, reference_point.z);
-                glEnd();
             }
+            glEnd();
         }
     }
 
     double getT(Ray &ray)
     {
         Vector normal(0, 0, 1);
+        Vector initialPoint(0, 0, 0);
 
-        double t = (-1.0) * ((normal * ray.start) / (normal * ray.dir));
-        Vector initialPoint = ray.start + ray.dir * t;
-
-        if (initialPoint.x < reference_point.x || initialPoint.x > -reference_point.x)
+        double t = ((normal * initialPoint) - (normal * ray.start)) / (normal * ray.dir);
+        if ((ray.dir * normal) == 0 || t < 0)
         {
             return -1;
         }
-
-        if (initialPoint.y < reference_point.y || initialPoint.y > -reference_point.y)
+        else
         {
-            return -1;
+            return t;
         }
 
-        return t;
+        // double t = (-1.0) * ((normal * ray.start) / (normal * ray.dir));
+        // Vector initialPoint = ray.start + ray.dir * t;
+
+        // if (initialPoint.x < reference_point.x || initialPoint.x > -reference_point.x)
+        // {
+        //     return -1;
+        // }
+
+        // if (initialPoint.y < reference_point.y || initialPoint.y > -reference_point.y)
+        // {
+        //     return -1;
+        // }
+
+        // return t;
     }
 
     Vector getNormal(Vector &initialPoint) override
@@ -509,19 +523,19 @@ public:
 
     Color getColor(Vector &v) override
     {
-        int x = (v.x - reference_point.x) / tileWidth;
-        int y = (v.y - reference_point.y) / tileWidth;
+        int x = (int)floor((v.x - reference_point.x) / tileWidth);
+        int y = (int)floor((v.y - reference_point.y) / tileWidth);
         int c = (x + y) % 2;
-        // return Color(c, c, c);
-        // return Color(0, 0, 0);
-        if ((x + y) % 2 == 0)
-        {
-            return Color(0, 0, 0);
-        }
-        else
-        {
-            return Color(0.8, 0.8, 0.8);
-        }
+        return Color(c, c, c);
+        // return Color(1, 1, 1);
+        // if ((x + y) % 2 == 0)
+        // {
+        //     return Color(0, 0, 0);
+        // }
+        // else
+        // {
+        //     return Color(0.8, 0.8, 0.8);
+        // }
     }
 };
 
@@ -615,8 +629,8 @@ public:
     {
         glColor3d(color.r, color.g, color.b);
         glPushMatrix();
-            glTranslated(reference_point.x, reference_point.y, reference_point.z);
-            glutSolidSphere(radius, 100, 100);
+        glTranslated(reference_point.x, reference_point.y, reference_point.z);
+        glutSolidSphere(radius, 100, 100);
         glPopMatrix();
     }
 
@@ -631,7 +645,7 @@ public:
         double a = 1;
         double b = (ray.dir * origin) * 2;
         double c = (origin * origin) - radius * radius;
-        
+
         double d = b * b - 4 * a * c;
         if (d < 0)
         {
@@ -661,7 +675,6 @@ public:
         }
 
         return -1;
-
     }
 
     Vector getNormal(Vector &initialPoint) override

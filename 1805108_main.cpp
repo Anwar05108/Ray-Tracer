@@ -213,7 +213,7 @@ void init()
     r.y = 0;
     r.z = 0;
 
-    glClearColor(0, 0, 0, 0);
+    // glClearColor(0, 0, 0, 0);
 
     glMatrixMode(GL_PROJECTION);
 
@@ -511,37 +511,37 @@ void takeInput()
             object->setShininess(shininess);
             objects.push_back(object);
 
-            object = new Triangle(bottom_lower_right_corner, bottom_upper_right_corner, top_lower_right_corner);
+            object = new Triangle(bottom_upper_right_corner, bottom_upper_left_corner, top_upper_left_corner);
             object->setColor(color);
             object->setCoefficients(ambient, diffuse, specular, reflection);
             object->setShininess(shininess);
             objects.push_back(object);
 
-            object = new Triangle(bottom_lower_right_corner, top_lower_right_corner, top_upper_right_corner);
+            object = new Triangle(bottom_upper_right_corner, top_upper_right_corner, top_upper_left_corner );
             object->setColor(color);
             object->setCoefficients(ambient, diffuse, specular, reflection);
             object->setShininess(shininess);
             objects.push_back(object);
 
-            object = new Triangle(bottom_upper_left_corner, bottom_upper_right_corner, top_upper_right_corner);
+            object = new Triangle(bottom_upper_right_corner, bottom_lower_right_corner, top_lower_right_corner);
             object->setColor(color);
             object->setCoefficients(ambient, diffuse, specular, reflection);
             object->setShininess(shininess);
             objects.push_back(object);
 
-            object = new Triangle(bottom_upper_left_corner, top_upper_left_corner, top_upper_right_corner);
+            object = new Triangle(bottom_upper_right_corner, top_upper_right_corner,top_lower_right_corner);
             object->setColor(color);
             object->setCoefficients(ambient, diffuse, specular, reflection);
             object->setShininess(shininess);
             objects.push_back(object);
 
-            object = new Triangle(top_lower_left_corner, top_lower_right_corner, top_upper_right_corner);
+            object = new Triangle(top_lower_left_corner, top_lower_right_corner, top_upper_left_corner);
             object->setColor(color);
             object->setCoefficients(ambient, diffuse, specular, reflection);
             object->setShininess(shininess);
             objects.push_back(object);
 
-            object = new Triangle(top_lower_left_corner, top_upper_left_corner, top_upper_right_corner);
+            object = new Triangle(top_lower_right_corner,  top_upper_right_corner, top_upper_left_corner);
             object->setColor(color);
             object->setCoefficients(ambient, diffuse, specular, reflection);
             object->setShininess(shininess);
@@ -707,7 +707,7 @@ int main(int argc, char **argv)
     takeInput();
 
     glutInit(&argc, argv);                                    // Initialize GLUT
-    glutInitWindowSize(640, 640);                             // Set the window's initial width & height
+    glutInitWindowSize(768, 768);                             // Set the window's initial width & height
     glutInitWindowPosition(0, 0);                             // Position the window's initial top-left corner
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB); // Depth, Double buffer, RGB color
     glutCreateWindow("OpenGL 3D Drawing");
